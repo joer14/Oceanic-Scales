@@ -15,10 +15,13 @@ int latchPin = 10;
 HL1606stripPWM strip = HL1606stripPWM(32, latchPin); 
 
 
+String inputString = "";         // a string to hold incoming data
+boolean stringComplete = false;  // whether the string is complete
+
 void setup() {
   Serial.begin(9600);
-  Serial.println("hello!");
-
+//  Serial.println("hello!");
+inputString.reserve(200);
   // You can customize/control the pulse width modulation and color 
   // resolution by setting how many bits of PWM you want per LED
   // For example, 3 bits is 8 different PWM values per LED and 9 bits, 512
@@ -57,109 +60,97 @@ void setup() {
   time *= 1000;           // time in milliseconds
   time /= F_CPU;          // multiplied by how long it takes for one instruction (nverse of cpu)
   
-  Serial.print("Time per LED strip write: "); 
-  Serial.print(time); Serial.println(" millis");
+//  Serial.print("Time per LED strip write: "); 
+//  Serial.print(time); Serial.println(" millis");
   
   time *= 100;
   time /= strip.getCPUmax();
   
-  Serial.print("Time allowed per interrupt ");
-  Serial.print(time);
-  Serial.println(" millis");
+//  Serial.print("Time allowed per interrupt ");
+//  Serial.print(time);
+//  Serial.println(" millis");
   
   // get that in Hz
   time = 1000 / time;
-  Serial.print("Interrupt freq: "); 
-  Serial.print(time);
-  Serial.println(" Hz");
+//  Serial.print("Interrupt freq: "); 
+//  Serial.print(time);
+//  Serial.println(" Hz");
 
   // Now find the final 'color cycle' frequency
-  Serial.print("Color cycle freq: "); 
-  Serial.print(time / (1 << strip.getPWMbits()));
-  Serial.println(" Hz");
+//  Serial.print("Color cycle freq: "); 
+//  Serial.print(time / (1 << strip.getPWMbits()));
+//  Serial.println(" Hz");
   // Try to keep the color frequency above 60 Hz (flickery). 100 Hz or higher looks good to most people
+
 }
 
+// make an oval pulse where the center is bright and the
+// edges are dimmer
+void createPulse(int8_t n, uint8_t r, uint8_t g, uint8_t b) {
+  strip.setLEDcolorPWM(n, r, g, b);
+  
+  if (n + 1 < strip.numLEDs())
+    strip.setLEDcolorPWM(n+1, r/8, g/8, b/8);
+  if (n - 1 >= 0)
+    strip.setLEDcolorPWM(n-1, r/8, g/8, b/8);
+ 
+  if (n + 2 < strip.numLEDs())
+    strip.setLEDcolorPWM(n+2, r/64, g/64, b/64);
+  if (n - 2 >= 0)      
+    strip.setLEDcolorPWM(n-2, r/64, g/64, b/64);
+}
+
+// blank out every pixel by setting it to 0
+void clearStrip() {
+    uint8_t i;
+    
+    for (i=0; i<strip.numLEDs(); i++) {
+      strip.setLEDcolorPWM(i, 0, 0, 0);
+    }    
+}
 
 uint8_t j=0;
-int incomingByte = 0; 
-unsigned long serialdata;
-int inbyte;
-
-long getSerial()
-{
-  serialdata = 0;
-  while (inbyte != '/')
-  {
-    inbyte = Serial.read();  
-    if (inbyte > 0 && inbyte != '/')
-    { 
-      serialdata = serialdata * 10 + inbyte - '0';
-      Serial.println(serialdata);
-    }
-  }
-  
-  return serialdata;
-  inbyte = 0;
-}
-
+uint8_t k=16;
 void loop() {
  
-  for (uint8_t i=0; i< strip.numLEDs() ; i++) {
-     uint16_t c = Wheel((i+j) % 96);
-     // the 16 bit color we get from Wheel is actually made of 5 bits RGB, we can use bitwise notation to get it out and
-     // convert it to 8 bit
-     strip.setLEDcolorPWM(i, (c & 0x1F) << 3, ((c>>10) & 0x1F) << 3, ((c>>5) & 0x1F) << 3);
-  }
+  // create a tealish pulse
+  clearStrip();
+  //             Red, Green, Blue
+  createPulse(j, 0,   128,   255);
+  createPulse(k, 255,   128,   0);
+  
+  // move the pulse up one pixel
   j++;
-  // there's only 96 colors in the 'wheel' so wrap around
-  if (j > 96) { j = 0; }
-  
-  //int delaytime=100; 
-  if (Serial.available()) {
-    int delaytime = Serial.parseInt();
-    if (Serial.read() == '\n'){
-    delay(delaytime);
-    }
-  }else delay(100);
-  
-}
-
-/************************** Pixel routine */
-// this code is from http://www.bliptronics.com Ben Moyes's example code for LEDs, check them out!
-
-// Create a 15 bit color value from R,G,B
-unsigned int Color(byte r, byte g, byte b)
-{
-  //Take the lowest 5 bits of each value and append them end to end
-  return( ((unsigned int)g & 0x1F )<<10 | ((unsigned int)b & 0x1F)<<5 | (unsigned int)r & 0x1F);
-}
-
-
-//Input a value 0 to 127 to get a color value.
-//The colours are a transition r - g -b - back to r
-unsigned int Wheel(byte WheelPos)
-{
-  byte r,g,b;
-  switch(WheelPos >> 5)
-  {
-    case 0:
-      r=31- WheelPos % 32;   //Red down
-      g=WheelPos % 32;      // Green up
-      b=0;                  //blue off
-      break; 
-    case 1:
-      g=31- WheelPos % 32;  //green down
-      b=WheelPos % 32;      //blue up
-      r=0;                  //red off
-      break; 
-    case 2:
-      b=31- WheelPos % 32;  //blue down 
-      r=WheelPos % 32;      //red up
-      g=0;                  //green off
-      break; 
+  k++;
+  // and wrap around the strip
+  if (j > strip.numLEDs()) {
+     j = 0;
   }
-  return(Color(r,g,b));
+  if (k > strip.numLEDs()) {
+     k = 0;
+  }
+  if (stringComplete) {
+    Serial.println(inputString); 
+    // clear the string:
+    int delaytime =atoi(inputString);
+    delay( delaytime);
+    inputString = "";
+    stringComplete = false;
+  }
+  delay(40);
 }
 
+void serialEvent() {
+  while (Serial.available()) {
+    // get the new byte:
+    char inChar = (char)Serial.read(); 
+    // add it to the inputString:
+    inputString += inChar;
+    // if the incoming character is a newline, set a flag
+    // so the main loop can do something about it:
+    if (inChar == '\n') {
+      stringComplete = true;
+    } 
+  }
+}
 
