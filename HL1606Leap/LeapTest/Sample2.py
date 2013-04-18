@@ -6,14 +6,22 @@
 # between Leap Motion and you, your company or other organization.             #
 ################################################################################
 
-import Leap, sys
+import Leap, sys, serial, time
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 
 
+		
 class SampleListener(Leap.Listener):
+    global ser
+    ser = serial.Serial('/dev/tty.usbserial-A9003ZlA',9600)
+    print ser
+# print ser
+    time.sleep(2)
+    ser.write('255,255,0\n')
+
     def on_init(self, controller):
         print "Initialized"
-
+        
     def on_connect(self, controller):
         print "Connected"
 
@@ -49,7 +57,13 @@ class SampleListener(Leap.Listener):
                 avg_pos /= len(fingers)
                 # print "Hand has %d fingers, average finger tip position: %s" % (
 #                       len(fingers), avg_pos)
-                print int(avg_pos.x % 255),",",int(avg_pos.y % 255),",",int(avg_pos.z % 255)
+#                 print int(avg_pos.x % 255),",",int(avg_pos.y % 255),",",int(avg_pos.z % 255)
+#                 print "sleeping"
+                time.sleep(.25)
+#                 global ser
+                
+                print str( str(int(avg_pos.x % 255)) + "," + str(int(avg_pos.y % 255))+ "," + str(int(avg_pos.z % 255) ))
+                ser.write(str( str(int(avg_pos.x % 255)) + "," + str(int(avg_pos.y % 255))+ "," + str(int(avg_pos.z % 255)) + '\n'))
 
 # 				print ave_pos
 
@@ -90,8 +104,13 @@ class SampleListener(Leap.Listener):
 
         if state == Leap.Gesture.STATE_INVALID:
             return "STATE_INVALID"
+            
+
+
 
 def main():
+                
+#     ser.open()
     # Create a sample listener and controller
     listener = SampleListener()
     controller = Leap.Controller()
