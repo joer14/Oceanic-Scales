@@ -8,13 +8,13 @@
     <meta name="author" content="">
 
     <!-- Le styles -->
-    <link href="http://twitter.github.io/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="css/bootstrap.css" rel="stylesheet">
     <style>
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
     </style>
-    <link href="http://twitter.github.io/bootstrap/assets/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="css/bootstrap-responsive.css" rel="stylesheet">
     <script src="js/Chart.js"></script>
     <script src="js/jquery.js"></script>
 	 <script src="js/bootstrap.js"></script>
@@ -59,12 +59,9 @@
 
       <h1>Oceanic Scales Data Feed Visualization</h1>
       <p class="lead">View Current Metrics<br>Some more details</p>
-      <h2>Some Metric</h2>
-      <p style="color:rgb(151,187,205);"> Monterey </p>
-      <p style="color:rgb(220,220,220);"> SF Local Monitor </p>
-		<canvas id="canvas" height="450" width="600"></canvas>
-
-
+    
+    <h4>Some Metric</h4>
+	<canvas id="canvas" height="225" width="300"></canvas>
 	<script>
 
 		var lineChartData = {
@@ -91,4 +88,46 @@
 	var myLine = new Chart(document.getElementById("canvas").getContext("2d")).Line(lineChartData);
 	
 	</script>
+	
+	<p style="color:rgb(151,187,205);"> Monterey </p>
+    <p style="color:rgb(220,220,220);"> SF Local Monitor </p>
+    <h4>Some Metric</h4>
+    <p style="color:rgb(151,187,205);"> Monterey </p>
+    <p style="color:rgb(220,220,220);"> SF Local Monitor </p>
+
+    <canvas id="radarc" height="300" width="300"></canvas>
+	<script>
+
+		var radarChartData = {
+			labels : ["pH","Nitrogen","CO2","Oxygen","Coding","Scatterometer","Fluorometer"],
+			datasets : [
+				{
+					fillColor : "rgba(220,220,220,0.5)",
+					strokeColor : "rgba(220,220,220,1)",
+					pointColor : "rgba(220,220,220,1)",
+					pointStrokeColor : "#fff",
+					data : [65,59,90,81,56,55,40]
+				},
+				{
+					fillColor : "rgba(151,187,205,0.5)",
+					strokeColor : "rgba(151,187,205,1)",
+					pointColor : "rgba(151,187,205,1)",
+					pointStrokeColor : "#fff",
+					data : [28,48,40,19,96,27,100]
+				},
+				{
+					fillColor : "rgba(105,210,231,0.5)",
+					strokeColor : "rgba(105,210,231,1)",
+					pointColor : "rgba(105,210,231,1)",
+					pointStrokeColor : "#fff",
+					data : [2,58,20,32,43,77,90]
+				}				
+			]
+			
+		}
+
+
+	var myRadar = new Chart(document.getElementById("radarc").getContext("2d")).Radar(radarChartData,{scaleShowLabels : false, pointLabelFontSize : 10});
+	</script>
+	
     </div> <!-- /container -->
