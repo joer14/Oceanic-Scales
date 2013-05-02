@@ -173,7 +173,7 @@ void loop() {
     scroll(1);
     set_pixel(0, rand_color());
     show();
-    delay(100);
+    delay(100);//s
   }
   wipe(25);
 

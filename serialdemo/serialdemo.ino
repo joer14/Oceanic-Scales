@@ -14,7 +14,7 @@
  * found the order of the wires is more reliable. Looking at the IC side
  * of the board, you'll find from left to right: V+, Data, Clock, Ground.
  */
-
+#include <SerialCommand.h>
 #define DATA_PIN (11)
 #define CLOCK_PIN (13)
 
@@ -24,16 +24,31 @@ uint32_t pixels[LIGHT_COUNT];
 
 #define pinModeFast(x, y) pinMode(x, y)
 #define digitalWriteFast(x, y) digitalWrite(x, y)
+SerialCommand SCmd;   // The demo SerialCommand object
 
 void setup() {
   Serial.begin(9600);
-  Serial.write("Set up!!!");
+//  Serial.write("Set up!!!");
   pinModeFast(DATA_PIN, OUTPUT);
   pinModeFast(CLOCK_PIN, OUTPUT);
   digitalWriteFast(DATA_PIN, LOW);
   digitalWriteFast(CLOCK_PIN, LOW);
+  SCmd.addCommand("P",process_command);  // Converts two arguments to integers and echos them back 
+  SCmd.addDefaultHandler(unrecognized);  // Handler for command that isn't matched  (says "What?") 
+  Serial.println("Ready"); 
 }
+void loop() {
+  SCmd.readSerial();
+//  uint32_t color = 0;
+//    int val1 = analogRead(2) / 4;
+////    solid_color(val1);
+////    show();
+//    for (uint8_t jj= 0; jj <50; ++jj){
+//      set_pixel_rgb(jj, val1,255-val1,val1);
+//      show();
+//    }
 
+}
 static void set_pixel(uint8_t index, uint32_t color) {
   pixels[index] = color & 0x00FFFFFF;
 }
@@ -160,150 +175,62 @@ static void wipe(uint8_t delay_msec) {
   }
 }
 
-String getHex(int num) {
-      char tmp[16];
-      char format[128];
+void process_command()    
+{
+  int aNumber;  
+  char *arg; 
 
-//      sprintf(format, "0x%%.%dX", precision);
-      sprintf(format, "%%.%dX", 2);
+  Serial.println("We're in process_command"); 
+  arg = SCmd.next();
+  int rr,bb,gg =0; 
+  if (arg != NULL) 
+  {
+    aNumber=atoi(arg);    // Converts a char string to an integer
+    Serial.print("First argument was: "); 
+    Serial.println(aNumber); 
+    rr=aNumber;
+  } 
+  else {
+    Serial.println("No arguments"); 
+  }
 
-      sprintf(tmp, format, num);
-      Serial.println(tmp);
-      return String(tmp);
-}
-
-void loop() {
-  uint32_t color = 0;
-//  Serial.println("Solid Colors");
-//  for (int i = 0; i < 7; ++i) {
-//    solid_color(simple_color(i));
-//    show();
-//    delay(1000);
-//  }
-//  
-//  Serial.println("Blues");
-//  for (int i = 0; i < 7; ++i) {
-//    solid_color(blue_color(i));
-//    show();
-//    delay(1000);
-//  }
-
-
-  // Halloween
-//  Serial.println("Halloween");
-//  for (int i = 0; i < LIGHT_COUNT * 4; ++i) {
-//    uint8_t r = rand() % 10;
-//    color = 0;
-//    if (r < 7) {
-//    } else if (r < 8) {
-//      color = 0x00ff1f00;  // orange
-//    } else {
-//      color = 0x0000ff00;  // green
-//    }
-//    scroll(1);
-//    set_pixel(0, color);
-//    show();
-//    delay(75);
-//  }
-//  wipe(75);
-
-
-//
-//  // pattern 1
-//  Serial.println("P1");
-//  
-//  for (int i = 0; i < LIGHT_COUNT * 10; ++i) {
-//    set_pixel(rand() % LIGHT_COUNT, rand_color());
-//    show();
-//    delay(50);
-//  }
-//  Serial.println("P2");
-//  delay(3000);
-//  for (int i = 0; i < LIGHT_COUNT * 10; ++i) {
-//    scroll(1);
-//    set_pixel(0, rand_color());
-//    show();
-//    delay(100);
-//  }
-//  wipe(25);
-//  Serial.println("P3");
-//  //rgb chaser 
-//  delay(3000);
-//  for (int i = 0; i < LIGHT_COUNT * 4; ++i) {
-//    color = rand_color_except(color);
-//    for (int j = 0; j < 5; ++j) {
-//      scroll(1);
-//      set_pixel(0, color);
-//      show();
-//      delay(25);
-//    }
-//  }
-//  Serial.println("P4");
-//  delay(3000);
-//  for (int i = 0; i < LIGHT_COUNT * 4; ++i) {
-//    color = rand_color_except(color);
-//    for (int j = 0; j < 8; ++j) {
-//      scroll(-1);
-//      set_pixel(LIGHT_COUNT - 1, color);
-//      show();
-//      delay(5);
-//    }
-//  }
-//  Serial.println("P5");
-//  delay(3000);
-//  for (int j = 0; j < 16; ++j) {
-//    color = rand_color_except(color);
-//    
-//    for (int i = 0; i < LIGHT_COUNT; ++i) {
-//      set_pixel(i, color);
-//      show();
-//      delay(5);
-//    }
-//  }
-//  Serial.println("P6");
-//  delay(3000);
-    int val1 = analogRead(2) / 4;
-//    int val1 = analogRead(2)*16384;
-//    String sval1 = String(val1, HEX); 
-//    int val2 = 255;
-//    String sval2 = String(val2, HEX);
-//    int val3 = 200;
-//    String sval3 = String(val3, HEX);
-//    String hexValue = sval1 + sval2 + sval3;
-////    Serial.println(hexValue);
-//    String String4 = getHex(val1);
-////    Serial.println(String4);
-//    
-//      
-////    delay(2000);
-//    
-    solid_color(val1);
-////    Serial.println(val);
-    show();
-    delay(50);
-    for (uint8_t jj= 0; jj <50; ++jj){
-    set_pixel_rgb(jj, val1,255-val1,val1);
-    show();
+  arg = SCmd.next(); 
+  if (arg != NULL) 
+  {
+    aNumber=atol(arg); 
+    Serial.print("Second argument was: "); 
+    Serial.println(aNumber); 
+    gg=aNumber;
+  } 
+  else {
+    Serial.println("No second argument"); 
+  }
+  arg = SCmd.next(); 
+  if (arg != NULL) 
+  {
+    aNumber=atol(arg); 
+    Serial.print("Second argument was: "); 
+    Serial.println(aNumber); 
+    bb = aNumber;
+  } 
+  else {
+    Serial.println("No second argument"); 
+  }
+  for (uint8_t jj= 0; jj <50; ++jj){
+      set_pixel_rgb(jj,rr, gg,bb);
+      show();
     }
-//  for (uint8_t k = 0; k < 7; ++k) {
-//////    Serial.println("K:" + k);
-//    uint32_t color = simple_color(k);
-//    for (uint32_t j = 0; j < 255; ++j) {
-//    Serial.println(j);
-////      solid_color(j);
-//      solid_color(color & get_dimmer_mask(j));
-//      show();
-//      
-//    }
-//  }
-////    delay(500);
-//      for (uint32_t j = 255; j != 0; --j) {
-//      Serial.println(j);
-////      solid_color(j);
-//      solid_color(color & get_dimmer_mask(j));
-//      show();
-//      
-//    }
-    
-//  }
+  
 }
+
+// This gets set as the default handler, and gets called when no other command matches. 
+void unrecognized()
+{
+  Serial.println("What?"); 
+   for (uint8_t jj= 0; jj <50; ++jj){
+      set_pixel_rgb(jj,255, 0,0);
+      show();
+    }
+}
+
+
