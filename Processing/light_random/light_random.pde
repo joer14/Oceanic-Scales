@@ -82,8 +82,8 @@ void draw(){
 
 void update()
 {
-   //tyler_twinkle();
-   tyler_pulsate();
+   tyler_twinkle();
+   //tyler_pulsate();
 }
 
 void tyler_twinkle()
